@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 // ready made middleware
@@ -48,6 +48,48 @@ async function run() {
             query.status={status}
         }
         const result = await taskCollection.find(query).toArray()
+        res.send(result)
+    })
+app.put('/tasktodo/:id', async(req, res)=> {
+    const id = req.params.id
+    const info = req.body
+    const filter = {_id: new ObjectId(id)}
+    const updatedoc = {
+        $set: {
+            status: info.status
+        }
+    }
+    const result = await taskCollection.updateOne(filter, updatedoc)
+    res.send(result)
+})
+
+app.get('/tasks/:id', async(req, res)=> {
+    const id = req.params.id
+    const filter = {_id: new ObjectId(id)}
+    const result = await taskCollection.findOne(filter)
+    res.send(result)
+})
+
+app.put('/tasks/:id', async(req, res)=>{
+    const id = req.params.id
+    const task = req.body
+    const filter = {_id: new ObjectId(id)}
+    const updateDoc = {
+        $set: {
+            title: task.title,
+            deadline: task.deadline,
+            priority: task.priority,
+            description: task.description
+        }
+    }
+    const result = await taskCollection.updateOne(filter, updateDoc)
+ res.send(result)
+})
+
+    app.delete('/tasks/:id', async(req, res)=>{
+        const id = req.params.id
+        const query = {_id: new ObjectId(id)}
+        const result = await taskCollection.deleteOne(query)
         res.send(result)
     })
     // Send a ping to confirm a successful connection
